@@ -1,0 +1,100 @@
+/* استایل‌های جدید برای WalletConnect */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close:hover {
+    color: #333;
+}
+
+#qr-code {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+}
+
+/* دکمه‌های کیف پول */
+#wallet-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#connect-metamask {
+    background: #f6851b;
+}
+
+#connect-walletconnect {
+    background: #3b99fc;
+}
+
+#disconnect-wallet {
+    background: #e53e3e;
+}
+
+/* ریسپانسیو برای موبایل */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    #wallet-section {
+        justify-content: center;
+    }
+    
+    .modal-content {
+        margin: 20px;
+        padding: 20px;
+    }
+}
+
+/* انیمیشن‌ها */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal {
+    animation: fadeIn 0.3s;
+}
+
+.pool-item, .winner-item {
+    transition: transform 0.2s ease;
+}
+
+.pool-item:hover, .winner-item:hover {
+    transform: translateX(5px);
+}
