@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت‌نام در Winstreak</title>
+    
+    <!-- WalletConnect -->
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <!-- Web3Modal -->
+    <script src="https://unpkg.com/web3modal@1.9.8/dist/index.js"></script>
+    <!-- Web3 -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- Ethers -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f5f9;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .info-item:not(:last-child) {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .label {
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .value {
+            color: #1f2937;
+            font-weight: 600;
+            font-size: 14px;
+            direction: ltr;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 8px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .status {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            font-weight: 500;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .status.success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .status.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .status.info {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .status.warning {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        .wallet-info {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            border-right: 4px solid var(--primary);
+        }
+
+        .wallet-info p {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .ticket-input-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .ticket-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .ticket-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-label {
+            display: block;
+            text-align: right;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 4px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .wallet-options {
+            display: grid;
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .wallet-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: right;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .wallet-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .wallet-icon {
+            width: 24px;
+            height: 24px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .network-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .network-connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .network-disconnected {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .wallet-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 16px 0;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+        }
+
+        /* Web3Modal Customization */
+        .web3modal-modal-lightbox {
+            z-index: 10000 !important;
+            background: rgba(0, 0, 0, 0.7) !important;
+            backdrop-filter: blur(5px);
+        }
+
+        .web3modal-modal-card {
+            border-radius: 20px !important;
+            background: white !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .web3modal-provider-container {
+            border: 1px solid #e5e7eb !important;
+            border-radius: 12px !important;
+            margin: 8px 0 !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .web3modal-provider-container:hover {
+            border-color: var(--primary) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .web3modal-provider-description {
+            color: #6b7280 !important;
+        }
+
+        .web3modal-provider-name {
+            color: #1f2937 !important;
+            font-weight: 600 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switcher">
+        <button class="lang-btn active" onclick="switchLanguage('fa')">فارسی</button>
+        <button class="lang-btn" onclick="switchLanguage('en')">English</button>
+    </div>
+
+    <div class="container">
+        <div class="logo">W</div>
+        <h1 id="title">ثبت‌نام در Winstreak</h1>
+        <p class="subtitle" id="subtitle">لطفاً ولت خود را متصل کرده و بلیط خریداری کنید</p>
+
+        <!-- Network Status -->
+        <div class="card">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label" id="networkLabel">وضعیت شبکه:</span>
+                    <span class="value">
+                        <span id="networkIndicator" class="network-indicator network-disconnected">قطع</span>
+                        <span id="networkValue">--</span>
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="label" id="accountLabel">آدرس کیف پول:</span>
+                    <span class="value" id="accountValue">--</span>
+                </div>
+                <div class="info-item">
+                    <span class="label" id="balanceLabel">موجودی:</span>
+                    <span class="value" id="balanceValue">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wallet Connection Section -->
+        <div id="walletSection">
+            <button class="btn" id="connectWalletBtn">
+                <span id="connectText">اتصال کیف پول</span>
+            </button>
+            
+            <div class="wallet-info">
+                <p id="supportText">پشتیبانی از تمام کیف پول‌ها: MetaMask, Trust Wallet, SafePal, WalletConnect, Coinbase Wallet و سایر ولت‌های سازگار</p>
+            </div>
+        </div>
+
+        <!-- Purchase Section -->
+        <div id="purchaseSection" style="display: none;">
+            <div class="card">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label" id="priceLabel">قیمت هر بلیط:</span>
+                        <span class="value" id="ticketPrice">--</span>
+                    </div>
+                    
+                    <div class="ticket-input-container">
+                        <label class="input-label" id="countLabel">تعداد بلیط</label>
+                        <input type="number" class="ticket-input" id="ticketCount" 
+                               min="1" max="20" value="1" 
+                               placeholder="1">
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="label" id="totalLabel">مبلغ قابل پرداخت:</span>
+                        <span class="value" id="totalAmount">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" id="buyTicketBtn">
+                <span id="buyText">خرید بلیط و ثبت‌نام</span>
+            </button>
+
+            <button class="btn btn-secondary" id="disconnectWalletBtn">
+                <span id="disconnectText">قطع اتصال کیف پول</span>
+            </button>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage"></div>
+
+        <!-- Transaction History -->
+        <div id="transactionSection" style="display: none;">
+            <div class="card">
+                <h3 style="text-align: right; margin-bottom: 15px; color: #1f2937;" id="historyTitle">تاریخچه تراکنش‌ها</h3>
+                <div id="transactionHistory">
+                    <!-- Transaction history will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
